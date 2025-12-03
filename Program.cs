@@ -6,6 +6,7 @@ builder.Services.AddDbContext<ParkingLotDB>(opt => opt.UseInMemoryDatabase("Todo
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApiDocument(config =>
 {
     config.DocumentName = "ParkingSpotAPI";
@@ -26,9 +27,6 @@ if (app.Environment.IsDevelopment())
         config.DocExpansion = "list";
     });
 }
-
-app.MapGet("/parkingSpots", async (ParkingLotDB db) =>
-    await db.ParkingLots.ToListAsync());
 
 
 app.Run();
