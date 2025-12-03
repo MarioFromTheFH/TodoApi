@@ -87,6 +87,26 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092 # Wichtig: Nutzt den internen Docker-Namen
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181 # Kann optional sein, aber hilfreich      
 
+# 4. PostgreSQL Datenbank
+  db:
+    image: postgres:latest
+    hostname: db
+    container_name: postgres_db
+    ports:
+      - "5432:5432" # Optional: Für den Zugriff von deinem Host-PC (z.B. mit PgAdmin)
+    environment:
+      POSTGRES_DB: parking_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      # Optional: Persistente Speicherung der Daten auf deinem Host
+      - postgres_data:/var/lib/postgresql/data
+    restart: always      
+
 networks:
   default:
     name: kafka-net
+
+volumes:
+  postgres_data:
+    driver: local    

@@ -14,6 +14,10 @@ COPY . .
 RUN dotnet restore
 RUN dotnet add package Swashbuckle.AspNetCore --version 10.0.1
 
+#Wichtig für die Datenbank
+RUN dotnet add TodoApi.csproj package Microsoft.EntityFrameworkCore.Design
+RUN dotnet add TodoApi.csproj package Npgsql.EntityFrameworkCore.PostgreSQL
+
 # 3. Berechtigungskorrekturen oder Benutzerwechsel (falls nötig)
 
 # OPTION A (Empfohlen für einfaches Development): Verwende Root, da die Berechtigungsprobleme in der Regel
