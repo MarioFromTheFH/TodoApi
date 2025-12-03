@@ -1,0 +1,27 @@
+# Entwicklungs-Dockerfile (Single-Stage)
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS development
+
+# Standard-User-ID (optional, kann entfernt werden)
+# ARG APP_UID=1000
+
+# 1. ERSTELLE DAS VERZEICHNIS und setze es als Arbeitsverzeichnis
+WORKDIR /app
+
+# 2. Kopiere die Dateien in das VERZEICHNIS
+# (Dies wird später durch das Volume überschrieben/synchronisiert)
+COPY . .
+
+RUN dotnet restore
+RUN dotnet add package Swashbuckle.AspNetCore --version 10.0.1
+
+# 3. Berechtigungskorrekturen oder Benutzerwechsel (falls nötig)
+
+# OPTION A (Empfohlen für einfaches Development): Verwende Root, da die Berechtigungsprobleme in der Regel
+# durch das Volume-Mounting verursacht werden.
+USER root 
+
+# OPTION B (Falls du die chown-Lösung unbedingt nutzen willst): 
+# Wenn du USER root NICHT setzt, dann muss die Berechtigungskorrektur HIER stehen, 
+# NACHDEM /app existiert und Dateien kopiert wurden.
+# RUN chown -R 1000:1000 /app
+# USER 1000

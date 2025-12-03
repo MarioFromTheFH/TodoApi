@@ -1,0 +1,68 @@
+services:
+  # 1. Apache Zookeeper (Notwendig für Kafka)
+  zookeeper:
+    image: 'confluentinc/cp-zookeeper:7.5.0'
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - '2181:2181'
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  # 2. Apache Kafka Broker
+  kafka:
+    image: 'confluentinc/cp-kafka:7.5.0'
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - '9092:9092' # Port 9092 für den Zugriff von deinem Host-System
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Interne Kommunikation zwischen Containern (wichtig für TodoApi)
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      # Externer Host-Zugriff (wenn du z.B. einen externen Producer/Consumer nutzt)
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # 3. Dein ASP.NET Core Service (TodoApi)
+# 3. Dein ASP.NET Core Service (TodoApi)
+  todoapi:
+    build:
+      context: . 
+      dockerfile: Dockerfile.Development 
+    hostname: todoapi
+    container_name: todoapi
+    ports:
+      - '5251:8080' 
+    depends_on:
+      - kafka
+    
+    command: dotnet watch --project TodoApi.csproj run --urls http://0.0.0.0:8080 --no-launch-profile
+    
+    environment:
+      - KAFKA__BOOTSTRAPSERVERS=kafka:29092
+      - ASPNETCORE_ENVIRONMENT=Development
+      
+    volumes:
+      # 1. Quellcode-Synchronisation: Synchronisiert alles außer bin/obj
+      - ./:/app
+      
+      # 2. Verdeckte Volumes (NEU): Diese leeren, anonymen Volumes
+      #    verhindern, dass die Host-Ordner 'bin' und 'obj' den Container
+      #    erreichen. Dadurch werden bin/obj vom Container selbst erstellt,
+      #    wodurch die Berechtigungsprobleme verschwinden.
+      - /app/bin
+      - /app/obj 
+      
+      # 3. Optional: Cache für NuGet-Pakete (unverändert)
+      # - ~/.nuget/packages:/root/.nuget/packages:ro
+
+networks:
+  default:
+    name: kafka-net
