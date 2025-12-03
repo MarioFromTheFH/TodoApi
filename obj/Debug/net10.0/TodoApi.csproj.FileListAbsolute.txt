@@ -1,0 +1,8 @@
+/home/marioschwaiger/Projekte/FH/WebServices/TodoApi/obj/Debug/net10.0/TodoApi.csproj.AssemblyReference.cache
+/home/marioschwaiger/Projekte/FH/WebServices/TodoApi/obj/Debug/net10.0/rpswa.dswa.cache.json
+/home/marioschwaiger/Projekte/FH/WebServices/TodoApi/obj/Debug/net10.0/TodoApi.GeneratedMSBuildEditorConfig.editorconfig
+/home/marioschwaiger/Projekte/FH/WebServices/TodoApi/obj/Debug/net10.0/TodoApi.AssemblyInfoInputs.cache
+/home/marioschwaiger/Projekte/FH/WebServices/TodoApi/obj/Debug/net10.0/TodoApi.AssemblyInfo.cs
+/home/marioschwaiger/Projekte/FH/WebServices/TodoApi/obj/Debug/net10.0/TodoApi.csproj.CoreCompileInputs.cache
+/home/marioschwaiger/Projekte/FH/WebServices/TodoApi/obj/Debug/net10.0/TodoApi.MvcApplicationPartsAssemblyInfo.cs
+/home/marioschwaiger/Projekte/FH/WebServices/TodoApi/obj/Debug/net10.0/TodoApi.MvcApplicationPartsAssemblyInfo.cache
