@@ -93,15 +93,17 @@ services:
     hostname: db
     container_name: postgres_db
     ports:
-      - "5432:5432" # Optional: Für den Zugriff von deinem Host-PC (z.B. mit PgAdmin)
+      - "5432:5432"
     environment:
       POSTGRES_DB: parking_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
+      # Zwingt Postgres, die Daten genau hier abzulegen (löst oft den Pfad-Konflikt)
+      PGDATA: /var/lib/postgresql/data/pgdata 
     volumes:
-      # Optional: Persistente Speicherung der Daten auf deinem Host
-      - postgres_data:/var/lib/postgresql/data
-    restart: always      
+      # Wir mappen das Volume in diesen Unterordner
+      - postgres_data:/var/lib/postgresql/data/pgdata
+    restart: always
 
 networks:
   default:

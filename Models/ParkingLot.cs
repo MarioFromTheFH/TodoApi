@@ -16,8 +16,10 @@ namespace ParkingProject.Models
         public double Longitude { get; set; }
 
         // Neue sinnvolle Felder für die DB:
-        public string Address { get; set; } = string.Empty; // Adresse
+        
         public bool IsUnderground { get; set; } // Tiefgarage?
         public decimal PricePerHour { get; set; } // Preis
+
+        public Address? Address { get; set; }
     }
 }
