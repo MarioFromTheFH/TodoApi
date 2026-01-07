@@ -1,0 +1,114 @@
+services:
+  # 1. Apache Zookeeper (Notwendig für Kafka)
+  zookeeper:
+    image: 'confluentinc/cp-zookeeper:7.5.0'
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - '2181:2181'
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  # 2. Apache Kafka Broker
+  kafka:
+    image: 'confluentinc/cp-kafka:7.5.0'
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - '9092:9092' # Port 9092 für den Zugriff von deinem Host-System
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      
+      # KORREKTUR DER LISTENER:
+      # 1. INTERN: Jetzt auf 127.0.0.1 für die interne Broker-Kommunikation
+      #    (Dies ist für Single-Broker-Setups im Docker der stabilste Weg).
+      # 2. EXTERNAL: Verwendung des Service-Namens (kafka) für andere Container.
+      # 3. HOST: Für den Zugriff von deinem PC.
+      KAFKA_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://0.0.0.0:9092
+      
+      # WICHTIG: Definiert, wie der Broker sich selbst und seine Listener bewirbt.
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      
+      # Definiert, welche Listener über welches Protokoll laufen.
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      
+      # Der Listener, den der Broker für die interne Kommunikation verwendet.
+      # Wir verwenden hier 'INTERNAL', da er über den Docker-DNS geht.
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL 
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # 3. Dein ASP.NET Core Service (TodoApi)
+# 3. Dein ASP.NET Core Service (TodoApi)
+  todoapi:
+    build:
+      context: . 
+      dockerfile: Dockerfile.Development 
+    hostname: todoapi
+    container_name: todoapi
+    ports:
+      - '5251:8080' 
+    depends_on:
+      - kafka
+    
+    command: dotnet watch --project TodoApi.csproj run --urls http://0.0.0.0:8080 --no-launch-profile
+    
+    environment:
+      - KAFKA__BOOTSTRAPSERVERS=kafka:29092
+      - ASPNETCORE_ENVIRONMENT=Development
+      
+    volumes:
+      # 1. Quellcode-Synchronisation: Synchronisiert alles außer bin/obj
+      - ./:/app
+      
+      # 2. Verdeckte Volumes (NEU): Diese leeren, anonymen Volumes
+      #    verhindern, dass die Host-Ordner 'bin' und 'obj' den Container
+      #    erreichen. Dadurch werden bin/obj vom Container selbst erstellt,
+      #    wodurch die Berechtigungsprobleme verschwinden.
+      - /app/bin
+      - /app/obj 
+      
+      # 3. Optional: Cache für NuGet-Pakete (unverändert)
+      # - ~/.nuget/packages:/root/.nuget/packages:ro
+
+# Hinzuzufügender Service in docker-compose.yml
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8081:8080" # Kafka UI ist dann auf http://localhost:8081 erreichbar
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-kafka
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092 # Wichtig: Nutzt den internen Docker-Namen
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181 # Kann optional sein, aber hilfreich      
+
+# 4. PostgreSQL Datenbank
+  db:
+    image: postgres:latest
+    hostname: db
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: parking_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      # Zwingt Postgres, die Daten genau hier abzulegen (löst oft den Pfad-Konflikt)
+      PGDATA: /var/lib/postgresql/data/pgdata 
+    volumes:
+      # Wir mappen das Volume in diesen Unterordner
+      - postgres_data:/var/lib/postgresql/data/pgdata
+    restart: always
+
+networks:
+  default:
+    name: kafka-net
+
+volumes:
+  postgres_data:
+    driver: local    
