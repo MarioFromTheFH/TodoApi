@@ -21,6 +21,9 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<MockSpotGenerator>();
 builder.Services.AddSingleton<KafkaProducerService>();
 
+//Serviceergänzung für DI
+builder.Services.AddScoped<IParkingLotService, ParkingLotService>();
+
 // Fügt nur die NSwag-Services für OpenAPI hinzu
 builder.Services.AddOpenApiDocument(config =>
 {
