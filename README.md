@@ -17,3 +17,7 @@ dotnet ef migrations add InitialCreate
 ```
 I'd love to have these in the Docker, but apparently it's not encouraged to do so. 
 I'll be looking for a better solution. 
+
+# Swagger
+
+Access to Swagger: http://localhost:5251/swagger/index.html
