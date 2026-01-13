@@ -4,8 +4,11 @@ using ParkingProject.Data; // Annahme: Du hast ParkingLotDB nach Data/ verschobe
 using ParkingProject.Models; // Annahme: Du hast ParkingLot nach Models/ verschoben
 using ParkingProject.Services; // Einbindungen der Services Klasse für DI
 
+using ParkingProject.Filters;
+
 [Route("api/admin/[controller]")] // Administrative Route
 [ApiController]
+[LogToKafka]
 public class ParkingLotCrudController : ControllerBase
 {
     private readonly IParkingLotService _parkingLotService;

@@ -60,9 +60,40 @@ namespace ParkingProject.Filters
                     await kafkaService.LogAccessAsync(log);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Logging soll niemals den Request crashen lassen
+                // 1. Konsolen-Ausgabe (Damit Exceptions nicht mehr "geschluckt" werden)
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"[KAFKA ERROR] {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                Console.WriteLine($"Aktion: {context.ActionDescriptor.DisplayName}");
+                Console.WriteLine($"Fehler: {ex.Message}");
+                Console.ResetColor();
+
+                // 2. In Datei schreiben
+                try 
+                {
+                    string logPath = Path.Combine(AppContext.BaseDirectory, "logs");
+                    string filePath = Path.Combine(logPath, "kafka_fallback_errors.log");
+
+                    // Sicherstellen, dass der Ordner existiert
+                    if (!Directory.Exists(logPath))
+                    {
+                        Directory.CreateDirectory(logPath);
+                    }
+
+                    string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ERROR in {context.ActionDescriptor.DisplayName}{Environment.NewLine}" +
+                                    $"Message: {ex.Message}{Environment.NewLine}" +
+                                    $"Stacktrace: {ex.StackTrace}{Environment.NewLine}" +
+                                    $"{new string('-', 50)}{Environment.NewLine}";
+
+                    // Anhängen an die Datei (erstellt die Datei, falls sie nicht existiert)
+                    File.AppendAllText(filePath, logEntry);
+                }
+                catch (Exception fileEx)
+                {
+                    // Falls sogar das Schreiben in die Datei fehlschlägt (z.B. keine Rechte)
+                    Console.WriteLine($"[CRITICAL] Could not write to log file: {fileEx.Message}");
+                }
             }
         }
     }
