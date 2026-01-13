@@ -25,3 +25,7 @@ Access to Swagger: http://localhost:5251/swagger/index.html
 # Console
 
 The console is provided here: https://github.com/delorenzo222/ParkClient/tree/main
+
+# Kafka
+
+As I am myself very new to Kafka, I rely and a UI. After running the docker compose commands you find the Kafka UI here: http://localhost:8081
