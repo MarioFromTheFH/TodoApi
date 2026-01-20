@@ -17,5 +17,12 @@ namespace ParkingProject.Services
         /// Legt einen neuen Parkplatz in der Datenbank an.
         /// </summary>
         Task<ParkingLot> CreateAsync(ParkingLot parkingLot);
+
+        /// <summary>
+        /// Löscht einen Parkplatz
+        /// </summary>
+        /// <param name="id">Die ID des zu löschenden Parkplatzes</param>
+        /// <returns>id, wenn gelöscht; -1, wenn nicht gefunden.</returns>
+        Task<int> RemoveAsync(int id);
     }
 }

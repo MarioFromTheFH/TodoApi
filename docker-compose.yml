@@ -73,6 +73,7 @@ services:
       
       # 3. Optional: Cache für NuGet-Pakete (unverändert)
       # - ~/.nuget/packages:/root/.nuget/packages:ro
+      - ./logs:/app/logs
 
 # Hinzuzufügender Service in docker-compose.yml
   kafka-ui:

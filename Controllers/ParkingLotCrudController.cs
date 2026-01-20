@@ -45,6 +45,18 @@ public class ParkingLotCrudController : ControllerBase
         // Erfolgreiche Rückgabe → HTTP 200
         return parkingLot;
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> RemoveParkingLot(int id){
+        var success = await _parkingLotService.RemoveAsync(id);
+        if (success==-1)
+            {
+                // Status 404 zurückgeben, wenn die ID nicht existiert
+                return NotFound($"Parkplatz mit ID {id} konnte nicht gefunden werden.");
+            }
+
+            // Status 204 (Erfolgreich, aber keine Daten im Response-Body)
+            return NoContent();
+    }
     
-    // ... Hier würden weitere Methoden wie Put und Delete folgen ...
 }
