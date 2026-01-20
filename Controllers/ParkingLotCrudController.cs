@@ -6,6 +6,12 @@ using ParkingProject.Services; // Einbindungen der Services Klasse für DI
 
 using ParkingProject.Filters;
 
+public class UpdateParkingLotRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public int TotalSpots { get; set; }
+}
+
 [Route("api/admin/[controller]")] // Administrative Route
 [ApiController]
 [LogToKafka]
@@ -57,6 +63,44 @@ public class ParkingLotCrudController : ControllerBase
 
             // Status 204 (Erfolgreich, aber keine Daten im Response-Body)
             return NoContent();
+    }
+
+    // PUT: api/ParkingLotCrud/5
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateParkingLotRequest request)
+    {
+        if (request == null) return BadRequest();
+
+        var success = await _parkingService.UpdateParkingLotAsync(id, request.Name, request.TotalSpots);
+
+        if (!success)
+        {
+            return NotFound($"Parkplatz mit ID {id} konnte nicht gefunden werden.");
+        }
+
+        // Bei PUT gibt man oft "204 No Content" oder das aktualisierte Objekt zurück.
+        return NoContent(); 
+    }
+
+    public async Task<bool> UpdateParkingLotAsync(int id, string newName, int newTotalSpots)
+    {
+        // 1. Bestehenden Parkplatz suchen
+        var parkingLot = await _context.ParkingLots.FindAsync(id);
+
+        if (parkingLot == null)
+        {
+            return false; // Nicht gefunden
+        }
+
+        // 2. Felder aktualisieren
+        parkingLot.Name = newName;
+        parkingLot.TotalSpots = newTotalSpots;
+
+        // 3. Änderungen speichern
+        // EF Core merkt automatisch ("Change Tracking"), dass sich Felder geändert haben
+        await _context.SaveChangesAsync();
+
+        return true;
     }
     
 }

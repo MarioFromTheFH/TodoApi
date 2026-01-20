@@ -59,6 +59,8 @@ services:
     environment:
       - KAFKA__BOOTSTRAPSERVERS=kafka:29092
       - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_WATCH_RESTART_ON_EXTERNAL_CHANGES=true
+#      - DOTNET_USE_POLLING_FILE_WATCHER=1
       
     volumes:
       # 1. Quellcode-Synchronisation: Synchronisiert alles außer bin/obj
