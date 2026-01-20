@@ -91,6 +91,27 @@ namespace ParkingProject.Services
             }
 
             return id;
-        }            
+        }
+        
+        public async Task<bool> UpdateParkingLotAsync(int id, string newName, int newTotalSpots)
+        {
+            // 1. Bestehenden Parkplatz suchen
+            var parkingLot = await _context.ParkingLots.FindAsync(id);
+
+            if (parkingLot == null)
+            {
+                return false; // Nicht gefunden
+            }
+
+            // 2. Felder aktualisieren
+            parkingLot.Name = newName;
+            parkingLot.TotalSpots = newTotalSpots;
+
+            // 3. Änderungen speichern
+            // EF Core merkt automatisch ("Change Tracking"), dass sich Felder geändert haben
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }
