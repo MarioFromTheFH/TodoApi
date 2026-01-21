@@ -52,6 +52,26 @@ Effektiv dieses Projekt. Der `ParkingLotCrudController` bietet `Create` (erstell
 - `DELETE` zum Entfernen eines Parkplatzes
 - `PUT` zum Ändern von Parkplätzen und Neuzuweisungen von Adressen
 
+Hier ein Beispielcode zum Hinzufügen eines neuen Parkplatzes:
+```json
+{
+  "name": "Test-Parkplatz",
+  "totalSpots": 75,
+  "latitude": 47.449680306633184, 
+  "longitude": 15.267162534779795,
+  "isUnderground": true,
+  "pricePerHour": 10,
+  "address": {
+
+    "street": "Finkenweg",
+    "houseNumber": "4/z",
+    "zipCode": "8605",
+    "city": "Kapfenberg"
+  }
+}
+
+```
+
 ### Status-Codes
 `200`: Kommt mit den meisten GET-Requests mit, die nur zur Abfrage dienen
 `201`: Erfolgreiches Erstellen eines Parkplatzes/Adresse 
