@@ -85,7 +85,8 @@ Zum Logging wird `Apache Kafka` verwendet. Da ich mit diesem Framework selbst ei
 
 Unter `KafkaLoggingAttribute.cs` gibt es die omnipräsente Methode die alles mitprotokolliert. 
 
-Wenn ein Parkplatz weniger als 10% Kapazität hat wird eine Message an Kafka gesendet. Das passiert in der `ParkingController`
+Wenn ein Parkplatz weniger als 10% Kapazität hat wird eine Message an Kafka gesendet. Das passiert in der `ParkingController`.
+Es gibt jetzt in Kafka unter `Consumers` die `alert-service-group` die benachrichtigt werden, wenn zu wenige Parkplätze frei sind.
 
 # 11. Funktionierende Gesamtlösung
 :) :) :)
