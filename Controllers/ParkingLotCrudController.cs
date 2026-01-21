@@ -30,7 +30,7 @@ public class ParkingLotCrudController : ControllerBase
     }
     
     // GET: api/admin/ParkingLotCrud/5
-    [HttpGet("{id}")]
+    [HttpGet("GetParkingLot/{id}")]
     public async Task<ActionResult<ParkingLot>> GetParkingLot(int id)
     {
         // Parkplatz über den Service abrufen
@@ -46,7 +46,7 @@ public class ParkingLotCrudController : ControllerBase
         return parkingLot;
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("RemoveParkingLot/{id}")]
     public async Task<IActionResult> RemoveParkingLot(int id){
         var success = await _parkingLotService.RemoveAsync(id);
         if (success==-1)
@@ -60,7 +60,7 @@ public class ParkingLotCrudController : ControllerBase
     }
 
     // PUT: api/ParkingLotCrud/5
-    [HttpPut("{id}")]
+    [HttpPut("Update/{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateParkingLotRequest request)
     {
         if (request == null) return BadRequest();
@@ -75,5 +75,25 @@ public class ParkingLotCrudController : ControllerBase
         // Bei PUT gibt man oft "204 No Content" oder das aktualisierte Objekt zurück.
         return NoContent(); 
     }    
+
+    
+    [HttpPut("{parkId}/UpdateAddress/{addressId}")]
+    public async Task<IActionResult> UpdateAddress(int addressId,int parkId, [FromBody] Address updatedAddress){
+        
+    // 1. Sicherheit: Prüfen, ob die addressId im Pfad mit der ID im Objekt übereinstimmt
+        if (addressId != updatedAddress.Id)
+        {
+            return BadRequest("Adress-ID Konflikt");
+        }
+
+        var success = await _parkingLotService.UpdateAddress(addressId,parkId);
+
+        if (!success)
+        {
+            return NotFound($"Adresse mit ID {addressId} oder Parkplatz mit ID {parkId} konnte nicht gefunden werden.");
+        }
+
+        return NoContent(); 
+    }
         
 }
