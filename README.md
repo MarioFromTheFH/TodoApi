@@ -60,5 +60,12 @@ Effektiv dieses Projekt. Der `ParkingLotCrudController` bietet `Create` (erstell
 
 Im Ordner `models` gibt es Klassen für `ApiAccessLog`, `ParkingLot`, `ParkingLotResponse`, `ParkingLotSummary`  diese werden dann auf die entsprechenden Datenbanken gemappt.
 
-## 3 Logging
+## 3 Logging/Messaging
 Zum Logging wird `Apache Kafka` verwendet. Da ich mit diesem Framework selbst ein Neuling bin, habe ich eine Kafka-UI mitlaufen: http://localhost:8081/
+
+Unter `KafkaLoggingAttribute.cs` gibt es die omnipräsente Methode die alles mitprotokolliert. 
+
+Wenn ein Parkplatz weniger als 10% Kapazität hat wird eine Message an Kafka gesendet. Das passiert in der `ParkingController`
+
+# 11. Funktionierende Gesamtlösung
+:) :) :)
