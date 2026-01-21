@@ -9,6 +9,9 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+        - zookeeper_data:/var/lib/zookeeper/data
+        - zookeeper_log:/var/lib/zookeeper/log      
 
   # 2. Apache Kafka Broker
   kafka:
@@ -39,7 +42,13 @@ services:
       # Der Listener, den der Broker für die interne Kommunikation verwendet.
       # Wir verwenden hier 'INTERNAL', da er über den Docker-DNS geht.
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL 
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1            
+      # WICHTIG: Pfad für die internen Kafka-Logs
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+
+    volumes:
+      # Hier werden die eigentlichen Nachrichten gespeichert
+      - kafka_data:/var/lib/kafka/data      
 
   # 3. Dein ASP.NET Core Service (TodoApi)
 # 3. Dein ASP.NET Core Service (TodoApi)
@@ -59,8 +68,8 @@ services:
     environment:
       - KAFKA__BOOTSTRAPSERVERS=kafka:29092
       - ASPNETCORE_ENVIRONMENT=Development
-      - DOTNET_WATCH_RESTART_ON_EXTERNAL_CHANGES=true
-#      - DOTNET_USE_POLLING_FILE_WATCHER=1
+      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
+      - DOTNET_USE_POLLING_FILE_WATCHER=1 # Oft nötig in Docker für Hot Reload
       
     volumes:
       # 1. Quellcode-Synchronisation: Synchronisiert alles außer bin/obj
@@ -115,3 +124,6 @@ networks:
 volumes:
   postgres_data:
     driver: local    
+  zookeeper_data:
+  zookeeper_log:
+  kafka_data:

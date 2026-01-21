@@ -33,5 +33,13 @@ namespace ParkingProject.Services
         /// <param name="newTotalSpots">Die neue Anzahl der Kapazität</param>
         /// <returns>True: Erfolg, False: Scheitern</returns>
         Task<bool> UpdateParkingLotAsync(int id, string newName, int newTotalSpots);
+
+        /// <summary>
+        /// Weist eine Adresse einem anderen Parkplatz zu
+        /// </summary>
+        /// <param name="adr_id">Die ID des der Adresse</param>
+        /// <param name="park_id">Die neue ID des Parkplatzes zu der diese Adresse gehören soll</param>
+        /// <returns>True: Erfolg, False: Scheitern</returns>
+        Task<bool> UpdateAddress(int adr_id, int park_id);
     }
 }

@@ -4,6 +4,8 @@ using ParkingProject.Models;
 using ParkingProject.Services;
 using ParkingProject.Filters;
 using Microsoft.EntityFrameworkCore;
+using Confluent.Kafka;
+using System.Text.Json;
 
 namespace TodoApi.Controllers;
 
@@ -13,14 +15,15 @@ namespace TodoApi.Controllers;
 public class ParkingController : ControllerBase
 {
     private readonly ParkingLotDB _context;
-    private readonly MockSpotGenerator _mockGenerator; // Dein ML-Mock
-    private readonly KafkaProducerService _kafkaProducer; // Unser neuer Logger
+    private readonly MockSpotGenerator _mockGenerator;
+    private readonly IProducer<Null, string> _kafkaProducer;
 
-    public ParkingController(ParkingLotDB context, MockSpotGenerator mockGen, KafkaProducerService kafka)
+    // Ändere HIER 'Ignore' zu 'Null':
+    public ParkingController(ParkingLotDB context, MockSpotGenerator mockGen, IProducer<Null, string> kafka)
     {
         _context = context;
         _mockGenerator = mockGen;
-        _kafkaProducer = kafka;
+        _kafkaProducer = kafka; // Jetzt passen die Typen zusammen!
     }
 
         [HttpGet("all")]
@@ -77,7 +80,22 @@ public class ParkingController : ControllerBase
         if (lot == null) return NotFound();
 
         int free = _mockGenerator.GetNextFreeSpots(lot.Id, lot.TotalSpots);
-                
+
+
+    // 2. Event an Kafka senden
+
+            var eventData = new { 
+            parkingLotId = id, 
+            currentFreeSpots = free,
+            totalSpots = lot.TotalSpots
+        };
+
+        // 2. Sende es direkt an Kafka
+        await _kafkaProducer.ProduceAsync("parking-occupancy-changed", new Message<Null, string> 
+        { 
+            Value = JsonSerializer.Serialize(eventData) 
+        });
+                        
         return Ok(free);
     }
 

@@ -54,7 +54,7 @@ namespace ParkingProject.Filters
                         ParkingLotId = parkingId,
                         UserAgent = userAgent,
                         ResultStatus = status,
-                        ResultValue = resultValue // Das Feld, das wir in 2/6 hinzugefügt haben
+                        ResultValue = resultValue 
                     };
 
                     await kafkaService.LogAccessAsync(log);

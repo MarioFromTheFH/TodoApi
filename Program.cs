@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ParkingProject;
 using ParkingProject.Data;
 using ParkingProject.Services;
+using Confluent.Kafka; // Wichtig!
 
 var builder = WebApplication.CreateBuilder(args);
 // builder.Services.AddDbContext<ParkingLotDB>(opt => opt.UseInMemoryDatabase("ParkingLot"));
@@ -30,6 +31,21 @@ builder.Services.AddOpenApiDocument(config =>
     config.DocumentName = "ParkingSpotAPI";
     config.Title = "ParkingSpotAPI v1";
     config.Version = "v1";
+});
+builder.Services.AddHostedService<AlertConsumerService>();
+
+// 1. Konfiguration für die Verbindung zum Docker-Kafka
+var producerConfig = new ProducerConfig 
+{ 
+    BootstrapServers = "kafka:29092" 
+};
+
+builder.Services.AddSingleton<IProducer<Null, string>>(sp => 
+{
+    var config = new ProducerConfig { BootstrapServers = "kafka:29092" };
+    
+    // 2. Hier den Typ im Builder ändern
+    return new ProducerBuilder<Null, string>(config).Build();
 });
 
 

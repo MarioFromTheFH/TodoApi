@@ -18,6 +18,7 @@ RUN dotnet restore
 #Wichtig für die Datenbank
 RUN dotnet add TodoApi.csproj package Microsoft.EntityFrameworkCore.Design
 RUN dotnet add TodoApi.csproj package Npgsql.EntityFrameworkCore.PostgreSQL
+RUN dotnet add TodoApi.csproj package Swashbuckle.AspNetCore.Annotations
 
 # 3. Berechtigungskorrekturen oder Benutzerwechsel (falls nötig)
 

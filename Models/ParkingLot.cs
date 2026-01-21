@@ -20,6 +20,7 @@ namespace ParkingProject.Models
         public bool IsUnderground { get; set; } // Tiefgarage?
         public decimal PricePerHour { get; set; } // Preis
 
+        [System.Text.Json.Serialization.JsonIgnore] // Verhindert, dass der Serializer hier wieder zurückspringt
         public Address? Address { get; set; }
     }
 }

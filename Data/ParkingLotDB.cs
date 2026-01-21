@@ -8,5 +8,6 @@ public class ParkingLotDB : DbContext
         : base(options) { }
 
     public DbSet<ParkingLot> ParkingLots => Set<ParkingLot>();
+    public DbSet<Address> Address => Set<Address>();
 }
 }

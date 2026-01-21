@@ -113,5 +113,19 @@ namespace ParkingProject.Services
 
             return true;
         }
+
+        public async Task<bool> UpdateAddress(int adr_id, int park_id){
+            // 1. Bestehende Adresse suchen
+            var address = await _context.Address.FindAsync(adr_id);
+            if (address == null)
+            {
+                return false; // Nicht gefunden
+            }
+            address.ParkingLotId = park_id;
+            await _context.SaveChangesAsync();
+
+            return true;
+
+        }
     }
 }
