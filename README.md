@@ -93,3 +93,21 @@ Den gibt es hier: https://github.com/delorenzo222/ParkClientApp
 
 # 11. Funktionierende Gesamtlösung
 :) :) :)
+
+# Swagger
+
+Access to Swagger: http://localhost:5251/swagger/index.html
+
+# Console
+
+The console is provided here: https://github.com/delorenzo222/ParkClient/tree/main
+
+# Kafka
+
+As I am myself very new to Kafka, I rely and a UI. After running the docker compose commands you find the Kafka UI here: http://localhost:8081
+
+## Settings for Kafka
+
+I work with what I know from Python as "Decorators", in order to modify the Class to modify Kafka Logging find it here:
+
+`Filters/KafkaLoggingAttribute.cs`
