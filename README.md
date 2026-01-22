@@ -1,113 +1,77 @@
-Just execute 
+1\. Erweiterung des Datenmodells (Models/ParkingLot.cs)
 
-```
-docker compose up --build
-```
-I had some issues with the Database resulting in various errors.
 
-If some weird errors occur on startup, consinder running these commands on the host first:
 
-```
-dotnet restore
-dotnet build
-dotnet ef migrations add InitialCreate
-dotnet add package Microsoft.EntityFrameworkCore.Design --version 10.0.0
-dotnet ef migrations add InitialCreate
+Änderung: Das Dokument wurde um die Eigenschaft CurrentFreeSpots erweitert.
 
-```
-I'd love to have these in the Docker, but apparently it's not encouraged to do so. 
-I'll be looking for a better solution. 
 
-# Aufgaben gelöst
-## 1 Beschreibung(en)
-### 1 Service
-Dieses Projekt stellt zwei Services zur Verfügung. Die obere Hierarchische Ebene `ParkingLotCrud`, die es erlaubt, administrativ tätig zu sein:
-- `/api/admin/ParkingLotCrud [POST]`: Neuen Parkplatz komplett erzeugen
-- `/api/admin/ParkingLotCrud/{id} [GET]`: Komplette Information über einen einzelnen Parkplatz auslesen
-- `/api/admin/ParkingLotCrud/{id} [DELETE]`: Einen Parkplatz löschen
-- `/api/admin/ParkingLotCrud/{id} [PUT]`: Einen Parkplatz ändern
-- `/api/admin/ParkingLotCrud/{adr_id},{park_id}` Einer Adresse einen anderen Parkplatz zuweisen
 
-Die zweite Ebene `Parking` liest direkt Parkplatzinformationen aus die sofort weiterverwendet werden können. 
+Hintergrund: Diese dient als dynamischer Speicherplatz im Objekt. Da die freien Plätze live berechnet werden, fungiert dieses Feld als "Gefäß", um die vom System generierten Werte aufzunehmen, bevor sie an den User gesendet werden.
 
-### 2 Bounded Context
-Diese Trennung zwischen administrativer Ebene und der Ebene die für die Benutzer/Entwickler einer bspw. Parkplatz-App interessant ist, ist der Bounded Context. Es wird zwischen Kunden des Parkplatzes (oder Parkplatzdienstleistungen) und dem Inhaber des Parkplatzes entschieden.
 
-### 3 Context Map
-Relevanz fraglich, da die Services relativ streng voneinander getrennt sind. 
 
-### 4 Datenmodell
-Besteht nur aus Parkplätzen und deren Adressen als eigene Tabellen. Mehr Tabellen würden nur unnötig viel Komplexität erzeugen. Jede Adresse hat genau einen Parkplatz. Das bedeutet im Umkehrschluss, dass ein Parkplatz über mehrere Adressen verfügen könnte. (Was aber effektiv nicht vorkommen kann
+2\. Implementierung der Service-Klasse (Services/ParkingLotService.cs)
 
-### 5 Datenvalidierung
-Passiert über das mapping. 
 
-## 2 ASP.NET Core Web.API
-### CRUD-Funktionaltitäten
-Effektiv dieses Projekt. Der `ParkingLotCrudController` bietet `Create` (erstellen neuer Parkplätze), `Replace`/`Update` (ändern von bestehenden Parkplätzen und Adressen, das überschneidet sich) und `Delete` (löschen von bestehenden Parkplätzen.
 
-###  HTTP-Verben
-- `POST` wird zur zur Erzeugung von neuen Parkplätzen (Mit Adresse in eigener Tabelle) verwendet. Post deswegen, damit wir uns mit der Länge keine Gedanken machen müssen
-- `GET` wird für alle lesenden Zugriffe verwendet
-- `DELETE` zum Entfernen eines Parkplatzes
-- `PUT` zum Ändern von Parkplätzen und Neuzuweisungen von Adressen
+Was: Diese neue Klasse bildet nun das Herzstück der Logik.
 
-Hier ein Beispielcode zum Hinzufügen eines neuen Parkplatzes:
-```json
-{
-  "name": "Test-Parkplatz",
-  "totalSpots": 75,
-  "latitude": 47.449680306633184, 
-  "longitude": 15.267162534779795,
-  "isUnderground": true,
-  "pricePerHour": 10,
-  "address": {
 
-    "street": "Finkenweg",
-    "houseNumber": "4/z",
-    "zipCode": "8605",
-    "city": "Kapfenberg"
-  }
-}
 
-```
+Zuständigkeit: Hier werden die Datenbankabfragen, die Simulation freier Plätze und das Logging zentral gebündelt. Anstatt die Logik im Controller zu verteilen, wird sie hier an einem Ort verwaltet.
 
-### Status-Codes
-`200`: Kommt mit den meisten GET-Requests mit, die nur zur Abfrage dienen
-`201`: Erfolgreiches Erstellen eines Parkplatzes/Adresse 
-`400 Error: Bad Request`: bei fehlerhaftem Input für neuen Parkplatz
-`404 Error: Not Found`: bei Eingabe einer nicht Existenten ID
 
-Im Ordner `models` gibt es Klassen für `ApiAccessLog`, `ParkingLot`, `ParkingLotResponse`, `ParkingLotSummary`  diese werden dann auf die entsprechenden Datenbanken gemappt.
 
-## 3 Logging/Messaging
-Zum Logging wird `Apache Kafka` verwendet. Da ich mit diesem Framework selbst ein Neuling bin, habe ich eine Kafka-UI mitlaufen: http://localhost:8081/
+3\. Anmeldung der Dienste (Program.cs)
 
-Unter `KafkaLoggingAttribute.cs` gibt es die omnipräsente Methode die alles mitprotokolliert. 
 
-Wenn ein Parkplatz weniger als 10% Kapazität hat wird eine Message an Kafka gesendet. Das passiert in der `ParkingController`.
-Es gibt jetzt in Kafka unter `Consumers` die `alert-service-group` die benachrichtigt werden, wenn zu wenige Parkplätze frei sind.
 
-## 6 Client
-Den gibt es hier: https://github.com/delorenzo222/ParkClientApp
+Was: In diesem Dokument wurde die Anmeldung via builder.Services.AddScoped<ParkingLotService>(); vorgenommen.
 
-# 11. Funktionierende Gesamtlösung
-:) :) :)
 
-# Swagger
 
-Access to Swagger: http://localhost:5251/swagger/index.html
+Warum: Hierdurch "registrieren" wir den Service im System. Das Framework weiß nun, wie es den ParkingLotService erstellen und überall dort einfügen muss, wo er im Konstruktor verlangt wird.
 
-# Console
 
-The console is provided here: https://github.com/delorenzo222/ParkClient/tree/main
 
-# Kafka
+4\. Umbau des Controllers (Controllers/ParkingController.cs)
 
-As I am myself very new to Kafka, I rely and a UI. After running the docker compose commands you find the Kafka UI here: http://localhost:8081
 
-## Settings for Kafka
 
-I work with what I know from Python as "Decorators", in order to modify the Class to modify Kafka Logging find it here:
+Änderung: Der Controller wurde komplett umgebaut und "schlank" gemacht.
 
-`Filters/KafkaLoggingAttribute.cs`
+
+
+Logik: Er verlangt im Konstruktor nur noch den ParkingLotService. Die eigentliche Arbeit (wie GetDetailsAsync) wird an den Service delegiert. Der Controller kümmert sich somit nur noch um die HTTP-Anfragen (Separation of Concerns).
+
+
+
+5\. Zentrale Konfiguration (appsettings.json)
+
+
+
+Was: Hier wurde ein neuer Eintrag für ParkingSettings (z. B. ein Schwellenwert für freie Plätze) hinzugefügt.
+
+
+
+Vorteil: Anstatt Zahlen fest im Code zu verankern ("Hardcoding"), nutzen wir dieses Dokument, um die App flexibel steuerbar zu machen, ohne den Quellcode ändern zu müssen.
+
+
+
+6\. Nutzung der Konfiguration via DI (Services/ParkingLotService.cs)
+
+
+
+Technik: Der ParkingLotService nutzt nun das Interface IConfiguration via Dependency Injection.
+
+
+
+Anwendung: Der Service liest die Werte direkt aus der appsettings.json aus, um beispielsweise bei Erreichen eines Schwellenwerts automatisch Warnmeldungen auf der Konsole auszugeben.
+
+
+
+
+
+* Entkopplung: Controller und Logik sind nun sauber getrennt.
+* Wartbarkeit: Änderungen an der Berechnung müssen nur noch in ParkingLotService.cs vorgenommen werden.
+* Flexibilität: Schwellenwerte lassen sich einfach über die appsettings.json anpassen.
