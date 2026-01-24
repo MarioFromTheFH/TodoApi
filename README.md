@@ -1,77 +1,73 @@
-1\. Erweiterung des Datenmodells (Models/ParkingLot.cs)
+# Aufgabe 5:
+
+Erstellen Sie eine Service-Klasse, welche per Dependency Injection aus Ihren Controller-Methoden oder Service-Klassen aufgerufen wird.
+
+## Lösung:
+
+DI entspricht hier der aufgerufenen Datenbankverbindung, die in der "Progrmm.cs" Datei an die Service Klasse weitergegeben wird.
+Dies erleichtert die Überarbeitung des Codes bei Änderung der Datenbank --> Anstatt in jeder Service-Klasse den Code zu ändern, muss er nur einmal in der "Programm.cs" Datei geändert werden.
+
+## Umsetzung:
+
+Unter Services wird eine neue Datei "IParkingLotService.cs" erstellt. Diese Datei dient als Interface eines Parkplatz und wird in der "Program.cs" Datei eingebunden. Folgende Tasks sind hier deklariert:
+
+* "GetByIdAsync" = Abrufen von Informationen eines Parkplatz",
+* "CreateAsync" = Erstellen eines neuen Parkplatz in der Datenbank,
+* "RemoveAsync" = Löschen eines Parkplatz,
+* "UpdateParkingLotAsync" = Update der Informationen eines Parkplatz,
+* "UpdateAddress" = Zuweisung einer neuen Adresse
 
 
 
-Änderung: Das Dokument wurde um die Eigenschaft CurrentFreeSpots erweitert.
+In der Datei "Program.cs" wird "IParkingLotService.cs" zum Aufruf des passenden Interfaces eingebunden und zur Erstellung einer passenden Instanz über "ParkingLotService.cs" aufgerufen (Interface wird mit Logik Klasse verknüpft):
+
+"builder.Services.AddScoped<IParkingLotService, ParkingLotService>();"
 
 
 
-Hintergrund: Diese dient als dynamischer Speicherplatz im Objekt. Da die freien Plätze live berechnet werden, fungiert dieses Feld als "Gefäß", um die vom System generierten Werte aufzunehmen, bevor sie an den User gesendet werden.
+Außerdem wird hier eine Verbindung zur Datenbank angemeldet, die dann auch an "ParkingLotService.cs" weitergegeben wird:
+
+"var connectionString = builder.Configuration.GetConnectionString("PostgresConnection")
+?? throw new InvalidOperationException("Connection string 'PostgresConnection' not found.");
+
+builder.Services.AddDbContext<ParkingLotDB>(options =>
+options.UseNpgsql(connectionString));"
 
 
 
-2\. Implementierung der Service-Klasse (Services/ParkingLotService.cs)
+"ParkingLotService.cs": Nimmt die Datenbankverbindung und Interface aus "Programm.cs" entgegen und erstellt eine angefragte Instanz.
+
+Hier wird dann die Datenbankverbindung gespeichert:
+"private readonly ParkingLotDB \_context;"
 
 
 
-Was: Diese neue Klasse bildet nun das Herzstück der Logik.
+---
 
 
 
-Zuständigkeit: Hier werden die Datenbankabfragen, die Simulation freier Plätze und das Logging zentral gebündelt. Anstatt die Logik im Controller zu verteilen, wird sie hier an einem Ort verwaltet.
+# Aufgabe 9:
+
+Verwenden Sie Einträge aus der „appsettings.json“ für einen beliebigen Zweck
+
+## Lösung:
+
+Durch Erstellung eines neuen Parkplatz wird eine Information darüber im Terminal ausgegeben, z.B.: "ParkingLot 'TEST9' wurde erstellt (ID=17)"
+
+## Umsetzung:
+
+"appsettings.json": Hier wurde eine Funktion für das Logging der Service Klasse erstellt, die ausgibt, ob ein Parkplatz erstellt wurde. Der Parameter kann für Ausgabe auf True gestellt werden und wenn keine Ausgabe des Loggings gemacht werden soll: False.
+
+"ParkingSettings": {
+"EnableCreateLogging": true
 
 
 
-3\. Anmeldung der Dienste (Program.cs)
+"ParkingLotService.cs": Hier wird in der json Datei nachgeschaut ob True oder False gesetzt ist. Wenn der Wert auf True gesetzt ist, wird folgender Code ausgeführt (Information das ein Parkplatz erstellt wurde):
 
+if (\_enableCreateLogging)
+{
+Console.WriteLine(
+$"ParkingLot '{parkingLot.Name}' wurde erstellt (ID={parkingLot.Id})");
+}
 
-
-Was: In diesem Dokument wurde die Anmeldung via builder.Services.AddScoped<ParkingLotService>(); vorgenommen.
-
-
-
-Warum: Hierdurch "registrieren" wir den Service im System. Das Framework weiß nun, wie es den ParkingLotService erstellen und überall dort einfügen muss, wo er im Konstruktor verlangt wird.
-
-
-
-4\. Umbau des Controllers (Controllers/ParkingController.cs)
-
-
-
-Änderung: Der Controller wurde komplett umgebaut und "schlank" gemacht.
-
-
-
-Logik: Er verlangt im Konstruktor nur noch den ParkingLotService. Die eigentliche Arbeit (wie GetDetailsAsync) wird an den Service delegiert. Der Controller kümmert sich somit nur noch um die HTTP-Anfragen (Separation of Concerns).
-
-
-
-5\. Zentrale Konfiguration (appsettings.json)
-
-
-
-Was: Hier wurde ein neuer Eintrag für ParkingSettings (z. B. ein Schwellenwert für freie Plätze) hinzugefügt.
-
-
-
-Vorteil: Anstatt Zahlen fest im Code zu verankern ("Hardcoding"), nutzen wir dieses Dokument, um die App flexibel steuerbar zu machen, ohne den Quellcode ändern zu müssen.
-
-
-
-6\. Nutzung der Konfiguration via DI (Services/ParkingLotService.cs)
-
-
-
-Technik: Der ParkingLotService nutzt nun das Interface IConfiguration via Dependency Injection.
-
-
-
-Anwendung: Der Service liest die Werte direkt aus der appsettings.json aus, um beispielsweise bei Erreichen eines Schwellenwerts automatisch Warnmeldungen auf der Konsole auszugeben.
-
-
-
-
-
-* Entkopplung: Controller und Logik sind nun sauber getrennt.
-* Wartbarkeit: Änderungen an der Berechnung müssen nur noch in ParkingLotService.cs vorgenommen werden.
-* Flexibilität: Schwellenwerte lassen sich einfach über die appsettings.json anpassen.
